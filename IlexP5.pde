@@ -30,13 +30,17 @@ int bgColor = color(100);
 //météo
 String ville = "Lyon";
 int tmp;
+float dataVent;
 int dataColor;
+float windVitesseMode;
+float windAmpMode;
+
 
 // Booléens
 boolean dosave=false;
 boolean play=true;
 boolean rotable=true;
-boolean dataMode = true;
+boolean dataMode = false;
 
 
 void setup() {
@@ -44,6 +48,8 @@ void setup() {
     
     //mode couleur
     bgMode = bgColor;
+    windVitesseMode = vitesse;
+    windAmpMode = amplitude;
     
   // contrôles
   cp5 = new ControlP5(this);
@@ -117,7 +123,7 @@ void setup() {
       cp5.addToggle("dataMode")
      .setPosition(720,30)
      .setSize(50,20)
-     .setValue(false)
+     .setValue(true) // = False...
      .setMode(ControlP5.SWITCH)
      .setGroup(g1)
      ;
@@ -164,8 +170,9 @@ void getDatas(){
     data = loadJSONObject("https://api.apixu.com/v1/current.json?key=549f1310b0a04599b1b135645171209&q="+ville);
     JSONObject datas = data.getJSONObject("current");
     tmp = datas.getInt("temp_c");
+    dataVent = datas.getInt("wind_kph");
     dataColor = color(tmp*10,0,255-tmp*10);
-    println(ville+" : "+tmp+"°C");
+    println(ville+" : "+tmp+"°C / "+dataVent+" km/h");
 }
 
 // Boucle principale
@@ -183,9 +190,15 @@ void draw() {
     pdf.rect(0,0, width,height);
   }
   
+  // Mode manuel ou mode data
+  if(dataMode == false){
+    windVitesseMode = vitesse;
+    windAmpMode = amplitude;
+  }
+  
   // Mode lecture
   if(play){
-    flying -= vitesse/2/4000;
+    flying -= windVitesseMode/2/4000;
   }
 
   // Calcul des coordonnées de la grille
@@ -193,7 +206,7 @@ void draw() {
   for (int y = 0; y < rows; y++) {
     float xoff = 0;
     for (int x = 0; x < cols; x++) {
-      terrain[x][y] = map(noise(xoff, yoff), 0, 1, -amplitude*10, amplitude*10);
+      terrain[x][y] = map(noise(xoff, yoff), 0, 1, -windAmpMode*10, windAmpMode*10);
       xoff += 0.02;
     }
     yoff += 0.01;
@@ -252,7 +265,7 @@ void draw() {
       // Lignes
       else if(motif == 1){
         vertex(x*grille, y*grille, terrain[x][y]);
-        vertex(x*grille, y*grille, terrain[x][y]+30);
+        vertex(x*grille, y*grille, terrain[x][y]+50);
       }
       // Croix
       else if(motif == 2){
@@ -276,6 +289,13 @@ popMatrix();
   if(dosave) {
     endRaw();
     dosave=false;
+  }
+  
+  // hack toggle
+  if(cp5.get(Toggle.class,"dataMode").getValue()==1){
+    cp5.get(Toggle.class,"dataMode").setColorActive(color(80));
+  }else{
+    cp5.get(Toggle.class,"dataMode").setColorActive(color(0,116,217));
   }
 }
 
@@ -331,17 +351,28 @@ void controlEvent(ControlEvent theEvent) {
     bgMode = bgColor;
     }
   }
+  println(vitesse);
 }
 
 // Toggle du mode data
 void dataMode(boolean theFlag) {
   if(theFlag==true) {
     bgMode = bgColor;
+    windVitesseMode = vitesse;
+    windAmpMode = amplitude;
     dataMode = false;
+    // Débloquer contrôles vent + amplirtude + couleur
+    cp5.get(Slider.class,"vitesse").unlock();
+    cp5.get(Slider.class,"amplitude").unlock();
   }else{
     getDatas();
     bgMode = dataColor;
+    windVitesseMode = dataVent;
+    windAmpMode = dataVent;
     dataMode = true;
+    // Bloquer contrôles vent + amplirtude + couleur
+    cp5.get(Slider.class,"vitesse").lock();
+    cp5.get(Slider.class,"amplitude").lock();
   }
 }
 
@@ -350,6 +381,8 @@ void Ok() {
   ville = cp5.get(Textfield.class,"ville").getText();
   getDatas();
   bgMode = dataColor;
+  windVitesseMode = dataVent;
+  windAmpMode = dataVent;
 }
 
 //mouseWheel
