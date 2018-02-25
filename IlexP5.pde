@@ -1,6 +1,7 @@
 import processing.opengl.*;
 import processing.pdf.*;
 import controlP5.*;
+
 ControlP5 cp5;
 Group g1;
 RadioButton rMotif, rColor;
@@ -10,8 +11,8 @@ JSONObject data;
 
 int cols, rows;
 int grille = 20;
-int w = 1800;
-int h = 1800;
+int w = 2000;
+int h = 2000;
 float flying = 0;
 float rotX = -PI;
 float rotY = PI;
@@ -21,6 +22,7 @@ float temperature;
 float[][] terrain;
 int motif = 0;
 int contour = 1;
+float tz;
 
 int bgMode;
 int bgColor = color(100);
@@ -30,7 +32,7 @@ String ville = "Lyon";
 int tmp;
 int dataColor;
 
-
+// Booléens
 boolean dosave=false;
 boolean play=true;
 boolean rotable=true;
@@ -96,6 +98,7 @@ void setup() {
      .addItem("Points",0)
      .addItem("Lignes",1)
      .addItem("Croix",2)
+     .addItem("Vortex",3)
      .setGroup(g1)
      ;
      
@@ -148,12 +151,14 @@ void setup() {
   createTerrain();  
 }
 
+// Fonction de création du paysage
 void createTerrain(){
-    cols = w / grille;
-  rows = h/ grille;
+  cols = w / grille;
+  rows = h / grille;
   terrain = new float[cols][rows];
 }
 
+// Fonction pour récupérer les données météo sur l'API apixu
 void getDatas(){
     // Mode data  
     data = loadJSONObject("https://api.apixu.com/v1/current.json?key=549f1310b0a04599b1b135645171209&q="+ville);
@@ -163,14 +168,14 @@ void getDatas(){
     println(ville+" : "+tmp+"°C");
 }
 
+// Boucle principale
 void draw() {
-
-  //pdf
+    // Export pdf
     if(dosave) {
     // set up PGraphicsPDF for use with beginRaw()
     PGraphicsPDF pdf = (PGraphicsPDF)beginRaw(PDF, "#########.pdf"); 
 
-    // set default Illustrator stroke styles and paint background rect.
+    // Options export pdf
     pdf.strokeJoin(MITER);
     pdf.strokeCap(SQUARE);
     pdf.noFill();
@@ -178,10 +183,12 @@ void draw() {
     pdf.rect(0,0, width,height);
   }
   
+  // Mode lecture
   if(play){
     flying -= vitesse/2/4000;
   }
 
+  // Calcul des coordonnées de la grille
   float yoff = flying;
   for (int y = 0; y < rows; y++) {
     float xoff = 0;
@@ -192,21 +199,28 @@ void draw() {
     yoff += 0.01;
     
   }
+  
+  // Couleur de fond et options graphiques
   background(bgMode);
+  // Couleur des éléments graphiques (blancs)
   stroke(255);
   noFill();
   
-  //vérifier que les contrôles ne sont pas actifs
+  // Vérifier que les contrôles ne sont pas actifs
   if(cp5.isMouseOver()){
     rotable = false;
   }else{
     rotable = true;
   }
-
+  
+  // Formes
   pushMatrix();
-  translate(width/2, height/2+50);
+  translate(width/2, height/2, tz);
+  
+  // Rotation 3D
   rotateX(PI/2-rotX);
   rotateZ(PI/2-rotY);
+
   if(play){
     if ((mousePressed) && (rotable)) {
         rotX += (pmouseY-mouseY)*.01;
@@ -216,8 +230,10 @@ void draw() {
   translate(-w/2, -h/2);
   for (int y = 0; y < rows-1; y++) {
 
+  // Motifs
+ 
   // Type 1
-  if(motif == 0){
+  if(motif == 0 || motif == 3){
     beginShape(POINTS);
     strokeWeight(contour*2);
   }
@@ -229,17 +245,29 @@ void draw() {
   }
   
     for (int x = 0; x < cols; x++) {
-      if(motif == 0){vertex(x*grille, y*grille, terrain[x][y]);}
+      // Points
+      if(motif == 0){
+        vertex(x*grille, y*grille, terrain[x][y]);
+      }
+      // Lignes
       else if(motif == 1){
         vertex(x*grille, y*grille, terrain[x][y]);
         vertex(x*grille, y*grille, terrain[x][y]+30);
       }
+      // Croix
       else if(motif == 2){
         vertex(x*grille, y*grille-5, terrain[x][y]);
         vertex(x*grille, y*grille+5, terrain[x][y]);
         vertex(x*grille-5, y*grille, terrain[x][y]);
         vertex(x*grille+5, y*grille, terrain[x][y]);
       }
+      // Vortex
+      else if(motif == 3){
+        vertex(x*grille, y*grille, terrain[x][y]);
+        rotateX(0.001);
+        rotateY(0.001);
+        rotateZ(0.001);
+      } 
     }
     endShape();
   }
@@ -251,6 +279,8 @@ popMatrix();
   }
 }
 
+
+// Événements clavier
 void keyPressed() {
   if(cp5.get(Textfield.class,"ville").isActive()==false){
    // pdf
@@ -268,7 +298,7 @@ void keyPressed() {
     play=!play;
   }
   
-  // masquer contrôles
+  // Masquer contrôles
   else if(key == 'c'){
     if(g1.isVisible() == true){
       g1.hide();
@@ -303,6 +333,7 @@ void controlEvent(ControlEvent theEvent) {
   }
 }
 
+// Toggle du mode data
 void dataMode(boolean theFlag) {
   if(theFlag==true) {
     bgMode = bgColor;
@@ -314,8 +345,16 @@ void dataMode(boolean theFlag) {
   }
 }
 
+// Bouton ok pour valider la ville
 void Ok() {
   ville = cp5.get(Textfield.class,"ville").getText();
   getDatas();
   bgMode = dataColor;
+}
+
+//mouseWheel
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  tz -= e;
+  println(e);
 }
