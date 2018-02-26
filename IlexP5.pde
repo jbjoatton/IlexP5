@@ -6,9 +6,9 @@ ControlP5 cp5;
 Group g1;
 RadioButton rMotif, rColor;
 Slider cg;
+Textlabel dataLabel;
+
 JSONObject data;
-
-
 int cols, rows;
 int grille = 20;
 int w = 2000;
@@ -53,6 +53,7 @@ void setup() {
     
   // contrôles
   cp5 = new ControlP5(this);
+  PFont font = createFont("HelveticaNeue",11);
   
   g1 = cp5.addGroup("g1")
     .setPosition(20,20)
@@ -136,12 +137,17 @@ void setup() {
      ;
      
      cp5.addBang("Ok")
-     .setPosition(900, 30)
+     .setPosition(895, 30)
      .setSize(30, 20)
      .setGroup(g1)
      .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
      ;    
 
+    dataLabel = cp5.addTextlabel("label")
+     .setPosition(715,80)
+     //.setFont(font)
+     .setGroup(g1)
+     ;
 
 
   cp5.getController("grille").getValueLabel().align(ControlP5.LEFT, ControlP5.CENTER).setPaddingX(5);
@@ -173,13 +179,13 @@ void getDatas(){
     dataVent = datas.getInt("wind_kph");
     dataColor = color(tmp*10,0,255-tmp*10);
     println(ville+" : "+tmp+"°C / "+dataVent+" km/h");
+    cp5.get(Textlabel.class,"label").show().setText(ville+" - Temp : "+tmp+"*C - Vent : "+dataVent+" km/h");
 }
 
 // Boucle principale
 void draw() {
     // Export pdf
     if(dosave) {
-    // set up PGraphicsPDF for use with beginRaw()
     PGraphicsPDF pdf = (PGraphicsPDF)beginRaw(PDF, "#########.pdf"); 
 
     // Options export pdf
@@ -190,13 +196,13 @@ void draw() {
     pdf.rect(0,0, width,height);
   }
   
-  // Mode manuel ou mode data
+  // Forcer mode manuel
   if(dataMode == false){
     windVitesseMode = vitesse;
     windAmpMode = amplitude;
   }
   
-  // Mode lecture
+  // Lecture
   if(play){
     flying -= windVitesseMode/2/4000;
   }
@@ -351,7 +357,6 @@ void controlEvent(ControlEvent theEvent) {
     bgMode = bgColor;
     }
   }
-  println(vitesse);
 }
 
 // Toggle du mode data
@@ -362,6 +367,7 @@ void dataMode(boolean theFlag) {
     windAmpMode = amplitude;
     dataMode = false;
     // Débloquer contrôles vent + amplirtude + couleur
+    //cp5.get(Textlabel.class,"label").hide();
     cp5.get(Slider.class,"vitesse").unlock();
     cp5.get(Slider.class,"amplitude").unlock();
   }else{
@@ -373,6 +379,7 @@ void dataMode(boolean theFlag) {
     // Bloquer contrôles vent + amplirtude + couleur
     cp5.get(Slider.class,"vitesse").lock();
     cp5.get(Slider.class,"amplitude").lock();
+    // Label
   }
 }
 
