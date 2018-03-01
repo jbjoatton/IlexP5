@@ -1,3 +1,10 @@
+/*
+TODO
+- fix bug export points pdf
+- logo Ilex en bas à gauche
+- intégrer bonnes couleurs
+*/
+
 import processing.opengl.*;
 import processing.pdf.*;
 import controlP5.*;
@@ -37,6 +44,7 @@ float windAmpMode;
 
 
 // Booléens
+boolean noir;
 boolean dosave=false;
 boolean play=true;
 boolean rotable=true;
@@ -45,7 +53,6 @@ boolean dataMode = false;
 
 void setup() {
     size(1000, 1000, OPENGL);
-    
     //mode couleur
     bgMode = bgColor;
     windVitesseMode = vitesse;
@@ -77,8 +84,16 @@ void setup() {
      .setPosition(30,60)
      .setSize(200,20)
      .setRange(1,10)
-     .setValue(1)
+     .setValue(2)
      .setNumberOfTickMarks(10)
+     .setGroup(g1)
+     ;
+     
+     cp5.addToggle("noir")
+     .setPosition(30,100)
+     .setSize(50,20)
+     .setValue(true) // = False...
+     .setMode(ControlP5.SWITCH)
      .setGroup(g1)
      ;
      
@@ -120,6 +135,8 @@ void setup() {
      .addItem("Noir",5)
      .setGroup(g1)
      ;
+     
+
      
       cp5.addToggle("dataMode")
      .setPosition(720,30)
@@ -190,7 +207,7 @@ void draw() {
 
     // Options export pdf
     pdf.strokeJoin(MITER);
-    pdf.strokeCap(SQUARE);
+    pdf.strokeCap(ROUND);
     pdf.noFill();
     pdf.noStroke();
     pdf.rect(0,0, width,height);
@@ -221,9 +238,15 @@ void draw() {
   
   // Couleur de fond et options graphiques
   background(bgMode);
-  // Couleur des éléments graphiques (blancs)
+  // Couleur des éléments graphiques (blanc par défaut)
+  if(noir==true){
   stroke(255);
+  }else{
+   stroke(0);
+  }
   noFill();
+  strokeWeight(contour);
+
   
   // Vérifier que les contrôles ne sont pas actifs
   if(cp5.isMouseOver()){
@@ -254,19 +277,18 @@ void draw() {
   // Type 1
   if(motif == 0 || motif == 3){
     beginShape(POINTS);
-    strokeWeight(contour*2);
   }
   
   // Type 2 et 3
   else if(motif == 1 || motif == 2){
     beginShape(LINES);
-    strokeWeight(contour);
   }
   
     for (int x = 0; x < cols; x++) {
       // Points
       if(motif == 0){
         vertex(x*grille, y*grille, terrain[x][y]);
+        //vertex(x*grille, y*grille, terrain[x][y]+1);
       }
       // Lignes
       else if(motif == 1){
@@ -298,10 +320,16 @@ popMatrix();
   }
   
   // hack toggle
-  if(cp5.get(Toggle.class,"dataMode").getValue()==1){
+  if(cp5.get(Toggle.class,"dataMode").getValue()==1 ){
     cp5.get(Toggle.class,"dataMode").setColorActive(color(80));
   }else{
     cp5.get(Toggle.class,"dataMode").setColorActive(color(0,116,217));
+  }
+  
+    if(cp5.get(Toggle.class,"noir").getValue()==1 ){
+    cp5.get(Toggle.class,"noir").setColorActive(color(80));
+  }else{
+    cp5.get(Toggle.class,"noir").setColorActive(color(0,116,217));
   }
 }
 
@@ -367,7 +395,7 @@ void dataMode(boolean theFlag) {
     windAmpMode = amplitude;
     dataMode = false;
     // Débloquer contrôles vent + amplirtude + couleur
-    //cp5.get(Textlabel.class,"label").hide();
+    cp5.get(Textlabel.class,"label").hide();
     cp5.get(Slider.class,"vitesse").unlock();
     cp5.get(Slider.class,"amplitude").unlock();
   }else{
@@ -396,5 +424,4 @@ void Ok() {
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
   tz -= e;
-  println(e);
 }
