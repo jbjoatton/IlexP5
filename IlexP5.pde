@@ -276,7 +276,7 @@ void draw() {
  
   // Type 1
   if(motif == 0 || motif == 3){
-    beginShape(POINTS);
+    beginShape(LINES);
   }
   
   // Type 2 et 3
@@ -288,7 +288,7 @@ void draw() {
       // Points
       if(motif == 0){
         vertex(x*grille, y*grille, terrain[x][y]);
-        //vertex(x*grille, y*grille, terrain[x][y]+1);
+        vertex(x*grille, y*grille, terrain[x][y]+1);
       }
       // Lignes
       else if(motif == 1){
