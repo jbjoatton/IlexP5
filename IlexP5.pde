@@ -14,7 +14,7 @@ Group g1;
 RadioButton rMotif, rColor;
 Slider cg;
 Textlabel dataLabel;
-
+            
 JSONObject data;
 int cols, rows;
 int grille = 20;
@@ -49,6 +49,9 @@ boolean dosave=false;
 boolean play=true;
 boolean rotable=true;
 boolean dataMode = false;
+
+// logo
+PImage logo;
 
 
 void setup() {
@@ -178,6 +181,9 @@ void setup() {
   
   // Création du paysage
   createTerrain();  
+  
+  // chargement logo svg
+  logo = loadImage("ilex.png");
 }
 
 // Fonction de création du paysage
@@ -185,6 +191,7 @@ void createTerrain(){
   cols = w / grille;
   rows = h / grille;
   terrain = new float[cols][rows];
+  println(cols+"/"+rows);
 }
 
 // Fonction pour récupérer les données météo sur l'API apixu
@@ -203,116 +210,108 @@ void getDatas(){
 void draw() {
     // Export pdf
     if(dosave) {
-    PGraphicsPDF pdf = (PGraphicsPDF)beginRaw(PDF, "#########.pdf"); 
-
-    // Options export pdf
-    pdf.strokeJoin(MITER);
-    pdf.strokeCap(ROUND);
-    pdf.noFill();
-    pdf.noStroke();
-    pdf.rect(0,0, width,height);
-  }
-  
-  // Forcer mode manuel
-  if(dataMode == false){
-    windVitesseMode = vitesse;
-    windAmpMode = amplitude;
-  }
-  
-  // Lecture
-  if(play){
-    flying -= windVitesseMode/2/4000;
-  }
-
-  // Calcul des coordonnées de la grille
-  float yoff = flying;
-  for (int y = 0; y < rows; y++) {
-    float xoff = 0;
-    for (int x = 0; x < cols; x++) {
-      terrain[x][y] = map(noise(xoff, yoff), 0, 1, -windAmpMode*10, windAmpMode*10);
-      xoff += 0.02;
+    beginRaw(PDF, "ilex" + timestamp() + ".pdf"); 
     }
-    yoff += 0.01;
     
-  }
-  
-  // Couleur de fond et options graphiques
-  background(bgMode);
-  // Couleur des éléments graphiques (blanc par défaut)
-  if(noir==true){
-  stroke(255);
-  }else{
-   stroke(0);
-  }
-  noFill();
-  strokeWeight(contour);
-
-  
-  // Vérifier que les contrôles ne sont pas actifs
-  if(cp5.isMouseOver()){
-    rotable = false;
-  }else{
-    rotable = true;
-  }
-  
-  // Formes
-  pushMatrix();
-  translate(width/2, height/2, tz);
-  
-  // Rotation 3D
-  rotateX(PI/2-rotX);
-  rotateZ(PI/2-rotY);
-
-  if(play){
-    if ((mousePressed) && (rotable)) {
-        rotX += (pmouseY-mouseY)*.01;
-        rotY += (pmouseX-mouseX)*-.01; 
+    // Forcer mode manuel
+    if(dataMode == false){
+      windVitesseMode = vitesse;
+      windAmpMode = amplitude;
     }
-  }
-  translate(-w/2, -h/2);
-  for (int y = 0; y < rows-1; y++) {
-
-  // Motifs
- 
-  // Type 1
-  if(motif == 0 || motif == 3){
-    beginShape(LINES);
-  }
-  
-  // Type 2 et 3
-  else if(motif == 1 || motif == 2){
-    beginShape(LINES);
-  }
-  
-    for (int x = 0; x < cols; x++) {
-      // Points
-      if(motif == 0){
-        vertex(x*grille, y*grille, terrain[x][y]);
-        vertex(x*grille, y*grille, terrain[x][y]+1);
-      }
-      // Lignes
-      else if(motif == 1){
-        vertex(x*grille, y*grille, terrain[x][y]);
-        vertex(x*grille, y*grille, terrain[x][y]+50);
-      }
-      // Croix
-      else if(motif == 2){
-        vertex(x*grille, y*grille-5, terrain[x][y]);
-        vertex(x*grille, y*grille+5, terrain[x][y]);
-        vertex(x*grille-5, y*grille, terrain[x][y]);
-        vertex(x*grille+5, y*grille, terrain[x][y]);
-      }
-      // Vortex
-      else if(motif == 3){
-        vertex(x*grille, y*grille, terrain[x][y]);
-        rotateX(0.001);
-        rotateY(0.001);
-        rotateZ(0.001);
-      } 
+    
+    // Lecture
+    if(play){
+      flying -= windVitesseMode/2/4000;
     }
-    endShape();
-  }
-popMatrix();
+  
+    // Calcul des coordonnées z de la grille
+    float yoff = flying;
+    for (int y = 0; y < rows; y++) {
+      float xoff = 0;
+      for (int x = 0; x < cols; x++) {
+        terrain[x][y] = map(noise(xoff, yoff), 0, 1, -windAmpMode*10, windAmpMode*10);
+        xoff += 0.02;
+      }
+      yoff += 0.01;
+    }
+    
+    // Couleur de fond et options graphiques
+    background(bgMode);
+    // Couleur des éléments graphiques (blanc par défaut)
+    if(noir==true){
+    stroke(255);
+    }else{
+     stroke(0);
+    }
+    noFill();
+    strokeWeight(contour);
+  
+    
+    // Vérifier que les contrôles ne sont pas actifs
+    if(cp5.isMouseOver()){
+      rotable = false;
+    }else{
+      rotable = true;
+    }
+    
+    // Formes
+    pushMatrix();
+    translate(width/2, height/2, tz);
+    
+    // Rotation 3D
+    rotateX(PI/2-rotX);
+    rotateZ(PI/2-rotY);
+  
+    if(play){
+      if ((mousePressed) && (rotable)) {
+          rotX += (pmouseY-mouseY)*.01;
+          rotY += (pmouseX-mouseX)*-.01; 
+      }
+    }
+    translate(-w/2, -h/2);
+    for (int y = 0; y < rows; y++) { 
+      for (int x = 0; x < cols; x++) {
+          
+          
+        // Points
+        if(motif == 0){
+          beginShape(POINTS);
+          vertex(x*grille, y*grille, terrain[x][y]);
+          vertex(x*grille, y*grille, terrain[x][y]);
+          endShape();
+        }
+        // Piquets
+        else if(motif == 1){
+          beginShape(LINES);
+          vertex(x*grille, y*grille, terrain[x][y]);
+          vertex(x*grille, y*grille, terrain[x][y]+50);
+          endShape();
+        }
+        // Croix
+        else if(motif == 2){
+          beginShape(LINES);
+          vertex(x*grille, y*grille-5, terrain[x][y]);
+          vertex(x*grille, y*grille+5, terrain[x][y]);
+          vertex(x*grille-5, y*grille, terrain[x][y]);
+          vertex(x*grille+5, y*grille, terrain[x][y]);
+          endShape();
+        }
+        // Vortex
+        else if(motif == 3){
+          beginShape(POINTS);
+          vertex(x*grille, y*grille, terrain[x][y]);
+          vertex(x*grille, y*grille, terrain[x][y]);
+          rotateX(0.001);
+          rotateY(0.001);
+          rotateZ(0.001);
+          endShape();
+        } 
+      }
+    }
+  popMatrix();
+  
+  // logo
+  image(logo, 50, 870,140,70);
 
   if(dosave) {
     endRaw();
@@ -424,4 +423,8 @@ void Ok() {
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
   tz -= e;
+}
+
+String timestamp() {
+  return year() + nf(month(), 2) + nf(day(), 2) + "-"  + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2);
 }
