@@ -1,13 +1,20 @@
 import processing.opengl.*;
 import processing.pdf.*;
 import controlP5.*;
+import java.util.*;
+
+// Couleurs
+List listColors = Arrays.asList("FF0000", "00FFFF", "666666","000000","FFFFFF");
+
 
 // Contrôles
 ControlP5 cp5;
 Group g1;
-RadioButton rMotif, rColor;
+RadioButton rMotif;
 Slider cg;
 Textlabel dataLabel;
+ScrollableList listC;
+Textarea help;
             
 JSONObject data;
 int cols, rows;
@@ -27,6 +34,7 @@ float tz;
 
 int bgMode;
 int bgColor = color(100);
+String hexaColor = null;
 
 //météo
 String ville = "Lyon";
@@ -46,19 +54,22 @@ boolean dataMode = false;
 
 // logo
 PImage logo;
+boolean showLogo = true;
+
+
 
 
 void setup() {
-    size(1000, 1000, OPENGL);
-    smooth(4);
-    bgMode = bgColor;
-    windVitesseMode = vitesse;
-    windAmpMode = amplitude;
-    
-    
+  size(1000, 1000, OPENGL);
+  smooth(4);
+  bgMode = bgColor;
+  windVitesseMode = vitesse;
+  windAmpMode = amplitude;
+  
   // Contrôles
   cp5 = new ControlP5(this);
   PFont font = createFont("HelveticaNeue",11);
+
   
   g1 = cp5.addGroup("g1")
     .setPosition(20,20)
@@ -123,15 +134,18 @@ void setup() {
      .setGroup(g1)
      ;
      
-      rColor = cp5.addRadioButton("bgColor")
+     
+     
+
+
+  listC = cp5.addScrollableList("couleurs")
      .setPosition(590,30)
-     .setSize(50,15)
-     .setColorActive(color(255))
-     .addItem("Rouge",1)
-     .addItem("Vert",2)
-     .addItem("Bleu",3)
-     .addItem("Gris",4)
-     .addItem("Noir",5)
+     .setSize(100, 100)
+     .setBarHeight(20)
+     .setItemHeight(20)
+     .addItems(listColors)
+     .setType(ScrollableList.DROPDOWN)
+     .setOpen(false)  
      .setGroup(g1)
      ;
      
@@ -164,6 +178,23 @@ void setup() {
      //.setFont(font)
      .setGroup(g1)
      ;
+     
+     
+     help = cp5.addTextarea("txt")
+                  .setPosition(200,height-135)
+                  .setSize(600,200)
+                  .setFont(createFont("arial",12))
+                  .setLineHeight(14)
+                  .setColor(color(220))
+                  .setColorBackground(color(255,0))
+                  .setColorForeground(color(255,100))
+                  .setGroup(g1)
+                  ;
+  help.setText("[ m ] : Afficher/masquer les contrôles\n"
+                    +"[ i ] : Exporter une image au format PNG\n"
+                    +"[ p ] : Exporter une image vectorielle au format PDF\n"
+                    +"[ Espace ] : Mettre en pause ou relancer l'animation"
+                    );
 
 
   cp5.getController("grille").getValueLabel().align(ControlP5.LEFT, ControlP5.CENTER).setPaddingX(5);
@@ -206,7 +237,12 @@ void getDatas(){
 void draw() {
     // Export pdf
     if(dosave) {
-    beginRaw(PDF, "ilex" + timestamp() + ".pdf"); 
+    PGraphicsPDF pdf = (PGraphicsPDF)beginRaw(PDF, "ilex" + timestamp() + ".pdf"); 
+    pdf.strokeJoin(MITER);
+    pdf.strokeCap(SQUARE);
+    pdf.noFill();
+    pdf.noStroke();
+    pdf.rect(0,0, width,height);
     }
     
     // Forcer mode manuel
@@ -310,7 +346,7 @@ void draw() {
   popMatrix();
   
   // logo
-  image(logo, 50, 870,140,70);
+  if(showLogo) image(logo, 50, 870,140,70);
 
   if(dosave) {
     endRaw();
@@ -329,6 +365,12 @@ void draw() {
   }else{
     cp5.get(Toggle.class,"noir").setColorActive(color(0,116,217));
   }
+  
+  // couleurs
+    if(hexaColor != null) {
+    println("You have selected: " + hexaColor, 100, 300);
+  }
+
 }
 
 
@@ -336,7 +378,7 @@ void draw() {
 void keyPressed() {
   if(cp5.get(Textfield.class,"ville").isActive()==false){
    // pdf
-  if (key == 's') { 
+  if (key == 'p') { 
     dosave=true;
   }
   
@@ -346,16 +388,18 @@ void keyPressed() {
   }
   
   // pause
-  else if(key == 'p'){
+  else if(key == ' '){
     play=!play;
   }
   
   // Masquer contrôles
-  else if(key == 'c'){
+  else if(key == 'm'){
     if(g1.isVisible() == true){
-      g1.hide();
+      g1.hide(); 
+      showLogo = false;
     }else{
       g1.show();
+      showLogo = true;
     }
   }
   }
@@ -367,23 +411,17 @@ void controlEvent(ControlEvent theEvent) {
   }
 
   //couleurs
-  if(theEvent.isFrom(rColor)) {
-    if(theEvent.getGroup().getValue()==1){
-    bgColor = color(255,0,0);
-    }else if(theEvent.getGroup().getValue()==2){
-    bgColor = color(50,150,0);
-    }else if(theEvent.getGroup().getValue()==3){
-    bgColor = color(0,0,255);
-    }else if(theEvent.getGroup().getValue()==4){
-    bgColor = color(100);
-    }else if(theEvent.getGroup().getValue()==5){
-    bgColor = color(0);
-    }
+  if(theEvent.isFrom(listC)) {
+    int index = int(cp5.get(ScrollableList.class, "couleurs").getValue());
+    String cc = cp5.get(ScrollableList.class, "couleurs").getItem(index).get("name").toString();
+    bgColor = unhex(cc);
+    println(bgColor);
     if(!dataMode){
-    bgMode = bgColor;
+      bgMode = bgColor;
     }
   }
 }
+
 
 // Toggle du mode data
 void dataMode(boolean theFlag) {
@@ -392,7 +430,7 @@ void dataMode(boolean theFlag) {
     windVitesseMode = vitesse;
     windAmpMode = amplitude;
     dataMode = false;
-    // Débloquer contrôles vent + amplirtude + couleur
+    // Débloquer contrôles vent + amplitude + couleur
     cp5.get(Textlabel.class,"label").hide();
     cp5.get(Slider.class,"vitesse").unlock();
     cp5.get(Slider.class,"amplitude").unlock();
