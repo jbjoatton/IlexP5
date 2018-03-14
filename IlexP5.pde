@@ -2,6 +2,7 @@ import processing.opengl.*;
 import processing.pdf.*;
 import controlP5.*;
 
+// Contrôles
 ControlP5 cp5;
 Group g1;
 RadioButton rMotif, rColor;
@@ -50,13 +51,12 @@ PImage logo;
 void setup() {
     size(1000, 1000, OPENGL);
     smooth(4);
-    //mode couleur
     bgMode = bgColor;
     windVitesseMode = vitesse;
     windAmpMode = amplitude;
     
     
-  // contrôles
+  // Contrôles
   cp5 = new ControlP5(this);
   PFont font = createFont("HelveticaNeue",11);
   
@@ -117,8 +117,9 @@ void setup() {
      .setColorActive(color(255))
      .addItem("Points",0)
      .addItem("Lignes",1)
-     .addItem("Croix",2)
-     .addItem("Vortex",3)
+     .addItem("Tiges",2)
+     .addItem("Croix",3)
+     .addItem("Vortex",4)
      .setGroup(g1)
      ;
      
@@ -177,7 +178,7 @@ void setup() {
   // Création du paysage
   createTerrain();  
   
-  // chargement logo svg
+  // chargement logo png
   logo = loadImage("logo.png");
 }
 
@@ -270,20 +271,25 @@ void draw() {
           
         // Points
         if(motif == 0){
-          beginShape(POINTS);
+          point(x*grille,y*grille,terrain[x][y]);
+          point(x*grille,y*grille,terrain[x][y]); // Correction d'un bug d'export pdf
+        }
+        // Lignes
+        else if(motif == 1){
+          beginShape(LINES);
           vertex(x*grille, y*grille, terrain[x][y]);
-          vertex(x*grille, y*grille, terrain[x][y]); // doublage du point
+          vertex(x*grille, y*grille+grille, terrain[x][y]);
           endShape();
         }
-        // Piquets
-        else if(motif == 1){
+        // Tiges
+        else if(motif == 2){
           beginShape(LINES);
           vertex(x*grille, y*grille, terrain[x][y]);
           vertex(x*grille, y*grille, terrain[x][y]+50);
           endShape();
         }
         // Croix
-        else if(motif == 2){
+        else if(motif == 3){
           beginShape(LINES);
           vertex(x*grille, y*grille-5, terrain[x][y]);
           vertex(x*grille, y*grille+5, terrain[x][y]);
@@ -292,21 +298,19 @@ void draw() {
           endShape();
         }
         // Vortex
-        else if(motif == 3){
-          beginShape(POINTS);
-          vertex(x*grille, y*grille, terrain[x][y]);
-          vertex(x*grille, y*grille, terrain[x][y]);
+        else if(motif == 4){
+          point(x*grille, y*grille, terrain[x][y]);
+          point(x*grille, y*grille, terrain[x][y]);
           rotateX(0.001);
           rotateY(0.001);
           rotateZ(0.001);
-          endShape();
         } 
       }
     }
   popMatrix();
   
   // logo
-  image(logo, 50, 870);
+  image(logo, 50, 870,140,70);
 
   if(dosave) {
     endRaw();
