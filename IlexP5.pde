@@ -1,10 +1,3 @@
-/*
-TODO
-- fix bug export points pdf
-- logo Ilex en bas à gauche
-- intégrer bonnes couleurs
-*/
-
 import processing.opengl.*;
 import processing.pdf.*;
 import controlP5.*;
@@ -56,10 +49,12 @@ PImage logo;
 
 void setup() {
     size(1000, 1000, OPENGL);
+    smooth(4);
     //mode couleur
     bgMode = bgColor;
     windVitesseMode = vitesse;
     windAmpMode = amplitude;
+    
     
   // contrôles
   cp5 = new ControlP5(this);
@@ -183,7 +178,7 @@ void setup() {
   createTerrain();  
   
   // chargement logo svg
-  logo = loadImage("ilex.png");
+  logo = loadImage("logo.png");
 }
 
 // Fonction de création du paysage
@@ -277,7 +272,7 @@ void draw() {
         if(motif == 0){
           beginShape(POINTS);
           vertex(x*grille, y*grille, terrain[x][y]);
-          vertex(x*grille, y*grille, terrain[x][y]);
+          vertex(x*grille, y*grille, terrain[x][y]); // doublage du point
           endShape();
         }
         // Piquets
@@ -311,7 +306,7 @@ void draw() {
   popMatrix();
   
   // logo
-  image(logo, 50, 870,140,70);
+  image(logo, 50, 870);
 
   if(dosave) {
     endRaw();
