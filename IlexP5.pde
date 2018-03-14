@@ -6,7 +6,6 @@ import java.util.*;
 // Couleurs
 List listColors = Arrays.asList("FF0000", "00FFFF", "666666","000000","FFFFFF");
 
-
 // Contrôles
 ControlP5 cp5;
 Group g1;
@@ -55,8 +54,6 @@ boolean dataMode = false;
 // logo
 PImage logo;
 boolean showLogo = true;
-
-
 
 
 void setup() {
@@ -181,20 +178,20 @@ void setup() {
      
      
      help = cp5.addTextarea("txt")
-                  .setPosition(200,height-135)
-                  .setSize(600,200)
-                  .setFont(createFont("arial",12))
-                  .setLineHeight(14)
-                  .setColor(color(220))
-                  .setColorBackground(color(255,0))
-                  .setColorForeground(color(255,100))
-                  .setGroup(g1)
-                  ;
+      .setPosition(200,height-135)
+      .setSize(600,200)
+      .setFont(createFont("arial",12))
+      .setLineHeight(14)
+      .setColor(color(220))
+      .setColorBackground(color(255,0))
+      .setColorForeground(color(255,100))
+      .setGroup(g1)
+      ;
   help.setText("[ m ] : Afficher/masquer les contrôles\n"
-                    +"[ i ] : Exporter une image au format PNG\n"
-                    +"[ p ] : Exporter une image vectorielle au format PDF\n"
-                    +"[ Espace ] : Mettre en pause ou relancer l'animation"
-                    );
+      +"[ i ] : Exporter une image au format PNG\n"
+      +"[ p ] : Exporter une image vectorielle au format PDF\n"
+      +"[ Espace ] : Mettre en pause ou relancer l'animation"
+      );
 
 
   cp5.getController("grille").getValueLabel().align(ControlP5.LEFT, ControlP5.CENTER).setPaddingX(5);
@@ -365,12 +362,6 @@ void draw() {
   }else{
     cp5.get(Toggle.class,"noir").setColorActive(color(0,116,217));
   }
-  
-  // couleurs
-    if(hexaColor != null) {
-    println("You have selected: " + hexaColor, 100, 300);
-  }
-
 }
 
 
@@ -384,7 +375,7 @@ void keyPressed() {
   
   // png
   else if(key == 'i'){
-    saveFrame("######.png");
+    saveFrame("ilex" + timestamp() + ".png");
   }
   
   // pause
