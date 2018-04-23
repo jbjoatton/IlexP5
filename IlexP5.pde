@@ -32,7 +32,7 @@ int contour = 1;
 float tz;
 
 int bgMode;
-int bgColor = color(100);
+int bgColor = color(0);
 String hexaColor = null;
 
 //météo
@@ -78,7 +78,7 @@ void setup() {
     ;
   
   //Amplitude et vitesse
-     cg = cp5.addSlider("grille")
+  cg = cp5.addSlider("grille")
      .setPosition(30,30)
      .setSize(200,20)
      .setRange(10,100)
@@ -86,7 +86,7 @@ void setup() {
      .setGroup(g1)
      ;
      
-    cp5.addSlider("contour")
+  cp5.addSlider("contour")
      .setPosition(30,60)
      .setSize(200,20)
      .setRange(1,10)
@@ -95,7 +95,7 @@ void setup() {
      .setGroup(g1)
      ;
      
-     cp5.addToggle("noir")
+   cp5.addToggle("noir")
      .setPosition(30,100)
      .setSize(50,20)
      .setValue(true) // = False...
@@ -111,7 +111,7 @@ void setup() {
      .setGroup(g1)
      ;
   
-      cp5.addSlider("amplitude")
+   cp5.addSlider("amplitude")
      .setPosition(260,60)
      .setSize(200,20)
      .setRange(0,100)
@@ -119,7 +119,7 @@ void setup() {
      .setGroup(g1)
      ;
      
-     rMotif = cp5.addRadioButton("motif")
+  rMotif = cp5.addRadioButton("motif")
      .setPosition(490,30)
      .setSize(50,15)
      .setColorActive(color(255))
@@ -148,7 +148,7 @@ void setup() {
      
 
      
-      cp5.addToggle("dataMode")
+  cp5.addToggle("dataMode")
      .setPosition(720,30)
      .setSize(50,20)
      .setValue(true) // = False...
@@ -156,14 +156,14 @@ void setup() {
      .setGroup(g1)
      ;
      
-      cp5.addTextfield("ville")
+   cp5.addTextfield("ville")
      .setPosition(790,30)
      .setSize(100,20)
      .setValue("Lyon")
      .setGroup(g1)
      ;
      
-     cp5.addBang("Ok")
+   cp5.addBang("Ok")
      .setPosition(895, 30)
      .setSize(30, 20)
      .setGroup(g1)
@@ -215,7 +215,6 @@ void createTerrain(){
   cols = w / grille;
   rows = h / grille;
   terrain = new float[cols][rows];
-  println(cols+"/"+rows);
 }
 
 // Fonction pour récupérer les données météo sur l'API apixu
@@ -249,9 +248,7 @@ void draw() {
     }
     
     // Lecture
-    if(play){
-      flying -= windVitesseMode/2/4000;
-    }
+    if(play) flying -= windVitesseMode/2/4000;
   
     // Calcul des coordonnées z de la grille
     float yoff = flying;
@@ -406,7 +403,6 @@ void controlEvent(ControlEvent theEvent) {
     int index = int(cp5.get(ScrollableList.class, "couleurs").getValue());
     String cc = cp5.get(ScrollableList.class, "couleurs").getItem(index).get("name").toString();
     bgColor = unhex(cc);
-    println(bgColor);
     if(!dataMode){
       bgMode = bgColor;
     }
