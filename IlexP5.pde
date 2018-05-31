@@ -4,7 +4,7 @@ import controlP5.*;
 import java.util.*;
 
 // Couleurs
-List listColors = Arrays.asList("FF0000", "00FFFF", "666666","000000","FFFFFF");
+List listColors = Arrays.asList("000000","FFFFFF","EFEFF0","61a173","61a299","4b5b8c","746086","8d4c7b","af523a","e5b634","93684f","c1a488","c0c3b9");
 
 // Contrôles
 ControlP5 cp5;
